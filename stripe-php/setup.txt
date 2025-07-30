@@ -1,0 +1,139 @@
+-- This script creates the database 'glst' and all tables EXACTLY as specified in your document.
+
+-- Drop the old database to start fresh
+DROP DATABASE IF EXISTS glst;
+
+-- Create the new database
+CREATE DATABASE glst;
+
+-- Select the new database to use
+USE glst;
+
+-- Table structure for table `tbl_login`
+CREATE TABLE `tbl_login` (
+  `username` VARCHAR(30) NOT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  `user_type` ENUM('admin','staff','student') NOT NULL,
+  PRIMARY KEY (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_course`
+CREATE TABLE `tbl_course` (
+  `course_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(20) NOT NULL,
+  `level` ENUM('A1','A2') NOT NULL,
+  `fee` DECIMAL(8,2) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`course_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_student`
+CREATE TABLE `tbl_student` (
+  `student_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `first_name` VARCHAR(30) NOT NULL,
+  `last_name` VARCHAR(30) DEFAULT NULL,
+  `email` VARCHAR(60) NOT NULL,
+  `phone` CHAR(10) DEFAULT NULL,
+  `registered_on` DATE NOT NULL,
+  `username` VARCHAR(20) NOT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`student_id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `username` (`username`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_staff`
+CREATE TABLE `tbl_staff` (
+  `staff_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `first_name` VARCHAR(30) NOT NULL,
+  `last_name` VARCHAR(30) DEFAULT NULL,
+  `email` VARCHAR(60) NOT NULL,
+  `phone` CHAR(10) DEFAULT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`staff_id`),
+  UNIQUE KEY `email` (`email`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_study_material`
+CREATE TABLE `tbl_study_material` (
+  `material_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `video_url` VARCHAR(200) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`material_id`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_assignment`
+CREATE TABLE `tbl_assignment` (
+  `assignment_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `material_id` SMALLINT UNSIGNED NOT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `instructions` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`assignment_id`),
+  FOREIGN KEY (`material_id`) REFERENCES `tbl_study_material`(`material_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_payment`
+CREATE TABLE `tbl_payment` (
+  `payment_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `amount` DECIMAL(8,2) NOT NULL,
+  `txn_reference` CHAR(30) DEFAULT NULL,
+  PRIMARY KEY (`payment_id`),
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE,
+  UNIQUE KEY `txn_reference` (`txn_reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_assignment_submission` (Corrected typo from doc)
+CREATE TABLE `tbl_assignment_submission` (
+  `submission_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `assignment_id` SMALLINT UNSIGNED NOT NULL,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `submission_text` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`submission_id`),
+  FOREIGN KEY (`assignment_id`) REFERENCES `tbl_assignment`(`assignment_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_assignment_evaluation`
+CREATE TABLE `tbl_assignment_evaluation` (
+  `evaluation_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `submission_id` SMALLINT UNSIGNED NOT NULL,
+  `staff_id` TINYINT UNSIGNED NOT NULL,
+  `feedback_text` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`evaluation_id`),
+  UNIQUE KEY `submission_id` (`submission_id`),
+  FOREIGN KEY (`submission_id`) REFERENCES `tbl_assignment_submission`(`submission_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`staff_id`) REFERENCES `tbl_staff`(`staff_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table structure for table `tbl_feedback`
+CREATE TABLE `tbl_feedback` (
+  `feedback_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `comment` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`feedback_id`),
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insert the default admin user and courses
+INSERT INTO `tbl_login` (`username`, `password`, `user_type`) VALUES ('admin@learngerman.com', 'admin123', 'admin');
+INSERT INTO `tbl_course` (`name`, `level`, `fee`, `description`) VALUES
+('Beginner German', 'A1', 100.00, 'An introductory course for absolute beginners.'),
+('Elementary German', 'A2', 120.00, 'A course for students with basic German knowledge.');
+
+-- Use the correct database
+USE glst;
+
+-- Alter the student table to allow for longer phone numbers
+ALTER TABLE `tbl_student` MODIFY `phone` VARCHAR(15) NULL DEFAULT NULL;
+
+-- Also alter the staff table for consistency
+ALTER TABLE `tbl_staff` MODIFY `phone` VARCHAR(15) NULL DEFAULT NULL;

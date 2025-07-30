@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn German - German Learning System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hero-bg {
+            background-color: #f8f7ff;
+        }
+        .btn-primary {
+            background-color: #7c3aed;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #6d28d9;
+            transform: scale(1.05);
+        }
+        .course-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .course-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        /* Animation for elements fading in on scroll */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Typing effect */
+        .typing-cursor {
+            border-right: .15em solid #7c3aed;
+            animation: blink-caret .75s step-end infinite;
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #7c3aed; }
+        }
+        /* Pulsing button animation */
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(124, 58, 237, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
+            }
+        }
+        /* Social icon hover effect */
+        .social-icon {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .social-icon:hover {
+            transform: scale(1.2);
+            color: #a78bfa; /* A lighter violet on hover */
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="home.php" class="text-2xl font-bold text-violet-700">Learn German</a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="home.php" class="text-gray-600 hover:text-violet-700">Home</a>
+                <a href="#courses" class="text-gray-600 hover:text-violet-700">Courses</a>
+                <a href="contact.php" class="text-gray-600 hover:text-violet-700">Contact</a>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="login.php" class="hidden md:block text-gray-600 hover:text-violet-700">Login</a>
+                <a href="register.php" class="btn-primary text-white px-4 py-2 rounded-lg">Register</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="hero-bg">
+        <div class="container mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 text-center md:text-left mb-12 md:mb-0">
+                <h1 id="typing-headline" class="text-4xl md:text-5xl font-bold text-gray-800 leading-tight mb-4 h-24 md:h-32"></h1>
+                <p class="text-lg text-gray-600 mb-8">Join our interactive platform to master German, from beginner to advanced levels, with expert instructors and a supportive community.</p>
+                <a href="#courses" class="btn-primary text-white px-8 py-3 rounded-lg text-lg font-semibold">Explore Courses</a>
+            </div>
+            <div class="md:w-1/2 flex justify-center">
+                <img src="image/hero.jpeg" alt="Reichstag building in Berlin, Germany" class="rounded-lg shadow-2xl">
+            </div>
+        </div>
+    </main>
+
+    <!-- Courses Section -->
+    <section id="courses" class="bg-gray-50 py-20 fade-in-section">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Explore Our Popular Courses Now</h2>
+            <div class="grid md:grid-cols-2 gap-10">
+                <!-- Course Card A1 -->
+                <div class="course-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="image/course-a1.jpeg" alt="Brandenburg Gate in Berlin" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">A1 Level - Beginner</h3>
+                        <p class="text-gray-600 mb-4">Perfect for absolute beginners. You will learn to introduce yourself, ask and answer basic personal questions, understand and use familiar everyday expressions, and interact in a simple way. This course sets a solid foundation for your German language journey.</p>
+                        <a href="register.php" class="btn-primary btn-pulse text-white font-semibold px-6 py-2 rounded-lg inline-block">Register Now</a>
+                    </div>
+                </div>
+                <!-- Course Card A2 -->
+                <div class="course-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="image/course-a2.jpeg" alt="Scenic view of a German town" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2">A2 Level - Elementary</h3>
+                        <p class="text-gray-600 mb-4">Build upon your basic knowledge. You will learn to communicate in simple and routine tasks, describe in simple terms aspects of your background and immediate environment, and handle short social exchanges. This course helps you gain more confidence in daily conversations.</p>
+                        <a href="register.php" class="btn-primary btn-pulse text-white font-semibold px-6 py-2 rounded-lg inline-block">Register Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-10">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-2">Learn German</h3>
+                    <p class="text-gray-400">Your partner in mastering the German language.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold mb-2">Quick Links</h3>
+                    <ul>
+                        <li class="mb-2"><a href="home.php" class="text-gray-400 hover:text-white">Home</a></li>
+                        <li class="mb-2"><a href="#courses" class="text-gray-400 hover:text-white">Courses</a></li>
+                        <li class="mb-2"><a href="login.php" class="text-gray-400 hover:text-white">Login</a></li>
+                        <li class="mb-2"><a href="register.php" class="text-gray-400 hover:text-white">Register</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-bold mb-2">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white social-icon"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white social-icon"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white social-icon"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white social-icon"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-500">
+                <p>&copy; 2024 Learn German. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        const sections = document.querySelectorAll('.fade-in-section');
+        sections.forEach(section => {
+            observer.observe(section);
+        });
+
+        // JavaScript for typing effect
+        const text = "Unlock Your German Potential with Us!";
+        let i = 0;
+        const headline = document.getElementById('typing-headline');
+        
+        function typeWriter() {
+            if (i < text.length) {
+                headline.innerHTML = text.substring(0, i + 1) + '<span class="typing-cursor"></span>';
+                i++;
+                setTimeout(typeWriter, 100);
+            } else {
+                 headline.innerHTML = text; // Remove cursor when done
+            }
+        }
+
+        // Start typing animation when the page loads
+        window.addEventListener('load', typeWriter);
+
+    </script>
+
+</body>
+</html>
