@@ -32,7 +32,7 @@ if (!$course) { die("Error: Course not found."); }
 
 $amount_in_cents = $course['fee'] * 100; // Stripe requires amount in cents
 $course_full_name = htmlspecialchars($course['name'] . ' (' . $course['level'] . ')');
-$currency = 'eur'; // You can change this to 'usd', 'inr', etc.
+$currency = 'inr'; // You can change this to 'usd', 'inr', etc.
 
 // --- Create a Stripe Checkout Session ---
 try {

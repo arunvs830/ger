@@ -1,0 +1,191 @@
+-- ===================================================================
+-- ==  German Learning System - Full Database Creation Script       ==
+-- ===================================================================
+-- This script will create the database, all tables, and insert
+-- the default admin user and courses. Run this on a new MySQL server.
+-- ===================================================================
+
+-- Create the database if it doesn't already exist
+CREATE DATABASE IF NOT EXISTS glst;
+
+-- Switch to the newly created database
+USE glst;
+
+--
+-- Table structure for table `tbl_login`
+--
+CREATE TABLE `tbl_login` (
+  `username` VARCHAR(60) NOT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  `user_type` ENUM('admin','staff','student') NOT NULL,
+  `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_course`
+--
+CREATE TABLE `tbl_course` (
+  `course_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(20) NOT NULL,
+  `level` ENUM('A1','A2') NOT NULL,
+  `fee` DECIMAL(8,2) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`course_id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_student`
+--
+CREATE TABLE `tbl_student` (
+  `student_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `first_name` VARCHAR(30) NOT NULL,
+  `last_name` VARCHAR(30) DEFAULT NULL,
+  `email` VARCHAR(60) NOT NULL,
+  `phone` VARCHAR(15) DEFAULT NULL,
+  `registered_on` DATE NOT NULL,
+  `username` VARCHAR(60) NOT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  PRIMARY KEY (`student_id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `username` (`username`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_staff`
+--
+CREATE TABLE `tbl_staff` (
+  `staff_id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `first_name` VARCHAR(30) NOT NULL,
+  `last_name` VARCHAR(30) DEFAULT NULL,
+  `email` VARCHAR(60) NOT NULL,
+  `phone` VARCHAR(15) DEFAULT NULL,
+  `password` VARCHAR(20) NOT NULL,
+  `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`staff_id`),
+  UNIQUE KEY `email` (`email`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_study_material`
+--
+CREATE TABLE `tbl_study_material` (
+  `material_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `course_id` TINYINT UNSIGNED NOT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `video_url` VARCHAR(200) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`material_id`),
+  FOREIGN KEY (`course_id`) REFERENCES `tbl_course`(`course_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_assignment`
+--
+CREATE TABLE `tbl_assignment` (
+  `assignment_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `material_id` SMALLINT UNSIGNED NOT NULL,
+  `title` VARCHAR(100) NOT NULL,
+  `instructions` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  PRIMARY KEY (`assignment_id`),
+  FOREIGN KEY (`material_id`) REFERENCES `tbl_study_material`(`material_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_payment`
+--
+CREATE TABLE `tbl_payment` (
+  `payment_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `amount` DECIMAL(8,2) NOT NULL,
+  `payment_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `txn_reference` CHAR(30) DEFAULT NULL,
+  PRIMARY KEY (`payment_id`),
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE,
+  UNIQUE KEY `txn_reference` (`txn_reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_assignment_submission`
+--
+CREATE TABLE `tbl_assignment_submission` (
+  `submission_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `assignment_id` SMALLINT UNSIGNED NOT NULL,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `submission_text` MEDIUMTEXT NOT NULL,
+  PRIMARY KEY (`submission_id`),
+  FOREIGN KEY (`assignment_id`) REFERENCES `tbl_assignment`(`assignment_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_assignment_evaluation`
+--
+CREATE TABLE `tbl_assignment_evaluation` (
+  `evaluation_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `submission_id` SMALLINT UNSIGNED NOT NULL,
+  `staff_id` TINYINT UNSIGNED NOT NULL,
+  `score` DECIMAL(5,2) DEFAULT NULL,
+  `feedback_text` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`evaluation_id`),
+  UNIQUE KEY `submission_id` (`submission_id`),
+  FOREIGN KEY (`submission_id`) REFERENCES `tbl_assignment_submission`(`submission_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`staff_id`) REFERENCES `tbl_staff`(`staff_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_feedback`
+--
+CREATE TABLE `tbl_feedback` (
+  `feedback_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `student_id` SMALLINT UNSIGNED NOT NULL,
+  `comment` VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (`feedback_id`),
+  FOREIGN KEY (`student_id`) REFERENCES `tbl_student`(`student_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Table structure for table `tbl_log`
+--
+CREATE TABLE `tbl_log` (
+  `log_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(60) NOT NULL,
+  `user_type` ENUM('admin','staff','student') NOT NULL,
+  `login_time` DATETIME NOT NULL,
+  `logout_time` DATETIME DEFAULT NULL,
+  PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Insert default data
+--
+INSERT INTO `tbl_login` (`username`, `password`, `user_type`, `status`) VALUES ('admin@learngerman.com', 'admin123', 'admin', 'active');
+INSERT INTO `tbl_course` (`name`, `level`, `fee`, `description`, `status`) VALUES
+('Beginner German', 'A1', 100.00, 'An introductory course for absolute beginners.', 'active'),
+('Elementary German', 'A2', 120.00, 'A course for students with basic German knowledge.', 'active');
+
+-- This script updates the course table to allow B1 and B2 levels,
+-- and then inserts the new course data.
+
+-- Select the database to use
+USE glst;
+
+-- Step 1: Modify the 'level' column to include B1 and B2
+-- This changes the allowed values for the course level.
+ALTER TABLE `tbl_course` 
+MODIFY COLUMN `level` ENUM('A1', 'A2', 'B1', 'B2') NOT NULL;
+
+-- Step 2: Insert the new B1 and B2 course details.
+-- You can change the name, fee, and description as needed.
+INSERT INTO `tbl_course` (`name`, `level`, `fee`, `description`, `status`) VALUES
+('Intermediate German', 'B1', 150.00, 'A course for intermediate learners focusing on complex sentences and topics.', 'active'),
+('Upper-Intermediate', 'B2', 180.00, 'A course for upper-intermediate learners to achieve fluency.', 'active');
+

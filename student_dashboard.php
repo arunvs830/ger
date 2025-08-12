@@ -1,8 +1,8 @@
 <?php
-// FILE: student_dashboard.php (Final Version with Score Display)
+// FILE: student_dashboard.php (Corrected and Final Version)
 session_start();
 
-// Security Check: Redirect to login if not a student or not logged in.
+// Security Check: Redirect to login page if the user is not logged in or is not a student.
 if (!isset($_SESSION['username']) || $_SESSION['user_type'] !== 'student') {
     header("Location: login.php");
     exit();
@@ -10,10 +10,11 @@ if (!isset($_SESSION['username']) || $_SESSION['user_type'] !== 'student') {
 
 require_once 'db_connect.php';
 
-// Get the logged-in student's username from the session.
+// Get the logged-in student's username (which is their email) from the session.
 $username = $_SESSION['username'];
 
-// --- 1. Fetch Student and Course Information ---
+// --- 1. Fetch the Logged-in Student's Information ---
+// This query is crucial. It uses the username from the session to find the student's specific details.
 $stmt = $conn->prepare("
     SELECT s.student_id, s.first_name, s.last_name, s.course_id, c.name AS course_name, c.level AS course_level
     FROM tbl_student s
@@ -25,9 +26,10 @@ $stmt->execute();
 $result = $stmt->get_result();
 $student_info = $result->fetch_assoc();
 
+// If no student data is found for this username, something is wrong. Log them out for safety.
 if (!$student_info) {
-    // This is a safeguard. If a logged-in user has no student record, something is wrong.
-    echo "Error: Could not find your student data. Please contact support.";
+    // This can happen if an admin deactivates a student while they are logged in.
+    header("Location: logout.php");
     exit();
 }
 
@@ -35,21 +37,13 @@ $student_id = $student_info['student_id'];
 $course_id = $student_info['course_id'];
 $course_name = $student_info['course_name'] . " (" . $student_info['course_level'] . ")";
 
-// --- 2. Fetch Course Materials, Assignments, Submissions, and Evaluations ---
-// This query now also fetches the 'score' from the evaluation table.
+// --- 2. Fetch Course Materials, Assignments, Submissions, and Evaluations for this specific student ---
 $materials_stmt = $conn->prepare("
     SELECT 
-        sm.material_id, 
-        sm.title AS video_title, 
-        sm.video_url, 
-        sm.description,
-        a.assignment_id, 
-        a.title AS assignment_title, 
-        a.instructions,
-        sub.submission_id,
-        sub.submission_text,
-        eval.feedback_text,
-        eval.score
+        sm.material_id, sm.title AS video_title, sm.video_url, sm.description,
+        a.assignment_id, a.title AS assignment_title, a.instructions,
+        sub.submission_id, sub.submission_text,
+        eval.feedback_text, eval.score
     FROM tbl_study_material sm
     LEFT JOIN tbl_assignment a ON sm.material_id = a.material_id AND a.status = 'active'
     LEFT JOIN tbl_assignment_submission sub ON a.assignment_id = sub.assignment_id AND sub.student_id = ?
@@ -97,6 +91,7 @@ $materials_result = $materials_stmt->get_result();
             <nav class="flex-1 px-4 py-4 space-y-2">
                 <a href="#" class="sidebar-link active flex items-center px-4 py-2 rounded-lg" onclick="showTab('my-course', this)"><i class="fas fa-book-open w-6 mr-2"></i> My Course</a>
                 <a href="#" class="sidebar-link flex items-center px-4 py-2 rounded-lg" onclick="showTab('feedback', this)"><i class="fas fa-comment-dots w-6 mr-2"></i> Give Feedback</a>
+                <a href="#" class="sidebar-link flex items-center px-4 py-2 rounded-lg" onclick="showTab('help', this)"><i class="fas fa-question-circle w-6 mr-2"></i> Help</a>
             </nav>
              <div class="px-4 py-4 border-t border-violet-700">
                  <a href="logout.php" class="sidebar-link flex items-center px-4 py-2 rounded-lg"><i class="fas fa-sign-out-alt w-6 mr-2"></i> Logout</a>
@@ -201,6 +196,29 @@ $materials_result = $materials_stmt->get_result();
                     </form>
                 </div>
             </div>
+            
+            <!-- Help Tab -->
+            <div id="help" class="tab-content">
+                <h1 class="text-3xl font-bold text-gray-800 mb-8">Student Help Guide</h1>
+                <div class="space-y-6 bg-white p-8 rounded-lg shadow-md">
+                    <div>
+                        <h2 class="text-xl font-semibold text-violet-700 mb-2"><i class="fas fa-book-open w-6 mr-2"></i>My Course</h2>
+                        <p>This is your main learning area. Scroll through to find your video lessons. After each video, you will see the assignment related to it.</p>
+                    </div>
+                    <div class="border-t pt-6">
+                        <h2 class="text-xl font-semibold text-violet-700 mb-2"><i class="fas fa-pencil-alt w-6 mr-2"></i>Submitting Assignments</h2>
+                        <p>Read the assignment instructions carefully. Type your answer in the text box provided and click the "Submit Assignment" button. Please note: You can only submit an assignment once. After you submit, the form will be locked.</p>
+                    </div>
+                    <div class="border-t pt-6">
+                        <h2 class="text-xl font-semibold text-violet-700 mb-2"><i class="fas fa-check-circle w-6 mr-2"></i>Viewing Feedback</h2>
+                        <p>Once a staff member has reviewed your submission, a green "Staff Evaluation" box will appear below your locked answer. Here you can see the score and feedback your instructor has provided.</p>
+                    </div>
+                    <div class="border-t pt-6">
+                        <h2 class="text-xl font-semibold text-violet-700 mb-2"><i class="fas fa-comment-dots w-6 mr-2"></i>Give Feedback</h2>
+                        <p>We want to hear from you! Use this section to provide general feedback about the course or your learning experience. Your comments help us improve the platform for everyone.</p>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -211,20 +229,6 @@ $materials_result = $materials_stmt->get_result();
             document.getElementById(tabName).classList.add('active');
             element.classList.add('active');
         }
-        
-        const text = "Welcome, <?php echo addslashes(htmlspecialchars($student_info['first_name'])); ?>!";
-        let i = 0;
-        const headline = document.getElementById('typing-headline');
-        function typeWriter() {
-            if (headline && i < text.length) {
-                headline.innerHTML = text.substring(0, i + 1) + '<span class="typing-cursor"></span>';
-                i++;
-                setTimeout(typeWriter, 100);
-            } else if (headline) {
-                 headline.innerHTML = text; 
-            }
-        }
-        window.addEventListener('load', typeWriter);
     </script>
 </body>
 </html>
